@@ -2,20 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, AlertCircle, Sparkles } from 'lucide-react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
+import { Lock, Mail, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, loginWithCredentials } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
@@ -28,30 +24,18 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccessMsg(null);
 
     try {
-      if (isSignUp) {
-        // Register using Firebase Auth SDK
-        await createUserWithEmailAndPassword(auth, email, password);
-        setSuccessMsg('Admin account registered successfully! Logging you in...');
-      } else {
-        // Sign in using Firebase Auth SDK
-        await signInWithEmailAndPassword(auth, email, password);
+      // Authenticate using the mocked credentials function
+      const success = await loginWithCredentials(email, password);
+      if (success) {
         router.push('/admin/dashboard');
+      } else {
+        setError('Invalid admin credentials. Please use the seeded login details.');
       }
     } catch (err: any) {
-      console.error('Firebase Auth error:', err);
-      // Map common Firebase errors to user friendly messages
-      let message = err.message || 'Authentication failed.';
-      if (err.code === 'auth/invalid-credential') {
-        message = 'Invalid email or password.';
-      } else if (err.code === 'auth/weak-password') {
-        message = 'Password must be at least 6 characters long.';
-      } else if (err.code === 'auth/email-already-in-use') {
-        message = 'This email address is already in use by another admin.';
-      }
-      setError(message);
+      console.error('Authentication error:', err);
+      setError('An error occurred during authentication.');
     } finally {
       setLoading(false);
     }
@@ -76,18 +60,23 @@ export default function AdminLoginPage() {
           </div>
         </div>
 
-        <form onSubmit={handleAuth} className="mt-8 space-y-6">
+        {/* Seeded Admin Login Details Notice */}
+        <div className="p-4 bg-emerald-950/30 border border-emerald-900/40 rounded-2xl text-xs space-y-2 text-emerald-300">
+          <div className="flex items-center gap-2 font-bold text-emerald-400">
+            <Info size={16} />
+            <span>MVP Seeded Admin Login</span>
+          </div>
+          <div className="space-y-1 font-mono text-xxs pl-6">
+            <div>Email: <span className="text-white font-bold select-all">admin@nyaningwe.com</span></div>
+            <div>Password: <span className="text-white font-bold select-all">admin123</span></div>
+          </div>
+        </div>
+
+        <form onSubmit={handleAuth} className="mt-6 space-y-6">
           {error && (
             <div className="p-3 bg-rose-950/50 border border-rose-800/50 rounded-xl text-rose-300 text-xs font-medium flex items-center gap-2">
               <AlertCircle size={16} className="text-rose-400 shrink-0" />
               <span>{error}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="p-3 bg-emerald-950/50 border border-emerald-800/50 rounded-xl text-emerald-300 text-xs font-medium flex items-center gap-2">
-              <Sparkles size={16} className="text-emerald-400 shrink-0" />
-              <span>{successMsg}</span>
             </div>
           )}
 
@@ -139,19 +128,10 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="w-full py-3 bg-brand-green-700 hover:bg-brand-green-600 text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50"
             >
-              {loading ? 'Authenticating...' : isSignUp ? 'Create Admin Account' : 'Sign In'}
+              {loading ? 'Authenticating...' : 'Sign In'}
             </button>
           </div>
         </form>
-
-        <div className="text-center pt-2">
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-xs text-slate-400 hover:text-white transition-colors"
-          >
-            {isSignUp ? 'Already have an admin account? Sign In' : 'Need a local testing admin account? Register here'}
-          </button>
-        </div>
       </div>
     </div>
   );
