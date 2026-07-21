@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { ShoppingBag, ArrowLeft, Trash2, Plus, Minus, CreditCard, Sparkles, CheckCircle } from 'lucide-react';
 import { useCart } from '../../../context/CartContext';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, clearCart, cartTotal } = useCart();
   const [name, setName] = useState('');
@@ -32,7 +34,7 @@ export default function CartPage() {
       }));
 
       // Submit order details to the FastAPI middleware gateway
-      const res = await fetch('http://localhost:8000/api/orders', {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

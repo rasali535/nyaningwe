@@ -16,6 +16,8 @@ interface Category {
   slug: string;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function AdminDashboard() {
   const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,13 +46,13 @@ export default function AdminDashboard() {
     setError(null);
     try {
       // 1. Fetch categories
-      const catRes = await fetch('http://localhost:8000/api/categories');
+      const catRes = await fetch(`${API_BASE}/api/categories`);
       if (!catRes.ok) throw new Error('Failed to load categories.');
       const cats = await catRes.json();
       setCategories(cats || []);
 
       // 2. Fetch admin products list (includes active and inactive)
-      const prodRes = await fetch('http://localhost:8000/api/admin/products', {
+      const prodRes = await fetch(`${API_BASE}/api/admin/products`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -92,7 +94,7 @@ export default function AdminDashboard() {
 
     try {
       // Connect to FastAPI bulk upload endpoint with authorization token
-      const res = await fetch('http://localhost:8000/api/admin/bulk-upload-images', {
+      const res = await fetch(`${API_BASE}/api/admin/bulk-upload-images`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -142,7 +144,7 @@ export default function AdminDashboard() {
     if (!token) return;
     setSavingId(id);
     try {
-      const res = await fetch(`http://localhost:8000/api/admin/products/${id}`, {
+      const res = await fetch(`${API_BASE}/api/admin/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

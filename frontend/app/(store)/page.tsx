@@ -11,6 +11,8 @@ interface Category {
   slug: string;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function StorefrontPage() {
   const { addToCart, cart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
@@ -28,13 +30,13 @@ export default function StorefrontPage() {
     setError(null);
     try {
       // 1. Fetch categories from FastAPI
-      const catRes = await fetch('http://localhost:8000/api/categories');
+      const catRes = await fetch(`${API_BASE}/api/categories`);
       if (!catRes.ok) throw new Error('Failed to load categories from backend.');
       const cats = await catRes.json();
       setCategories(cats || []);
 
       // 2. Fetch active products from FastAPI
-      const prodRes = await fetch('http://localhost:8000/api/products');
+      const prodRes = await fetch(`${API_BASE}/api/products`);
       if (!prodRes.ok) throw new Error('Failed to load products from backend.');
       const prods = await prodRes.json();
       
@@ -60,7 +62,7 @@ export default function StorefrontPage() {
   const handleSeedData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/dev/seed-data', {
+      const response = await fetch(`${API_BASE}/api/dev/seed-data`, {
         method: 'POST',
       });
       if (!response.ok) throw new Error('Failed to run database seeder.');
