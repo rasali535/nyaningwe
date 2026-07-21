@@ -11,6 +11,105 @@ interface Category {
   slug: string;
 }
 
+const MOCK_CATEGORIES: Category[] = [
+  { _id: 'cat_pantry', name: 'Pantry & Groceries', slug: 'pantry-groceries' },
+  { _id: 'cat_bakery', name: 'Bakery', slug: 'bakery' },
+  { _id: 'cat_dairy', name: 'Dairy & Eggs', slug: 'dairy-eggs' },
+  { _id: 'cat_beverages', name: 'Beverages', slug: 'beverages' },
+  { _id: 'cat_fresh', name: 'Fresh Produce', slug: 'fresh-produce' },
+];
+
+const MOCK_PRODUCTS: Product[] = [
+  {
+    id: 'prod_maize_meal',
+    sku: '6001108001012',
+    name: 'Red Seal Roller Meal 10kg',
+    price: 6.99,
+    stock_quantity: 120,
+    category_id: 'cat_pantry',
+    is_active: true,
+    description: 'High quality refined white roller meal, staple for every meal.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_cooking_oil',
+    sku: '6001108002026',
+    name: 'Zimgold Cooking Oil 2L',
+    price: 3.49,
+    stock_quantity: 85,
+    category_id: 'cat_pantry',
+    is_active: true,
+    description: 'Pure double refined vegetable cooking oil for healthy cooking.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_sugar',
+    sku: '6001108003030',
+    name: 'Gold Star White Sugar 2kg',
+    price: 2.80,
+    stock_quantity: 150,
+    category_id: 'cat_pantry',
+    is_active: true,
+    description: 'Premium Zimbabwean fine grain white sugar.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_bread',
+    sku: '6001108004044',
+    name: 'Lobels Prime White Bread',
+    price: 1.10,
+    stock_quantity: 40,
+    category_id: 'cat_bakery',
+    is_active: true,
+    description: 'Freshly baked white sandwich bread, soft and nutritious.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_milk',
+    sku: '6001108005058',
+    name: 'Dairibord Super Milk 1L',
+    price: 1.45,
+    stock_quantity: 60,
+    category_id: 'cat_dairy',
+    is_active: true,
+    description: 'Long-life full cream milk, rich in calcium and vitamins.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_tea',
+    sku: '6001108006062',
+    name: 'Tanganda Tea Bags 100s',
+    price: 1.85,
+    stock_quantity: 95,
+    category_id: 'cat_beverages',
+    is_active: true,
+    description: 'Strength and flavor in every cup, natural black tea bags.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_washing_powder',
+    sku: '6001108007076',
+    name: 'MAQ Washing Powder 2kg',
+    price: 4.25,
+    stock_quantity: 35,
+    category_id: 'cat_pantry',
+    is_active: true,
+    description: 'Super concentrated active ingredients for clean and bright clothes.',
+    image_url: '/logo.jpg'
+  },
+  {
+    id: 'prod_rice',
+    sku: '6001108008080',
+    name: 'Gloria White Rice 2kg',
+    price: 2.10,
+    stock_quantity: 110,
+    category_id: 'cat_pantry',
+    is_active: true,
+    description: 'Long grain parboiled white rice, perfect fluffy texture.',
+    image_url: '/logo.jpg'
+  }
+];
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function StorefrontPage() {
@@ -19,6 +118,7 @@ export default function StorefrontPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,9 +146,13 @@ export default function StorefrontPage() {
         id: p._id
       }));
       setProducts(mappedProds || []);
+      setIsDemoMode(false);
     } catch (e: any) {
-      console.error('Error fetching data from FastAPI:', e);
-      setError(e.message || 'Failed to connect to the backend server. Check that the server is online.');
+      console.warn('Error fetching data from FastAPI, falling back to mock:', e);
+      setCategories(MOCK_CATEGORIES);
+      setProducts(MOCK_PRODUCTS);
+      setIsDemoMode(true);
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -94,6 +198,20 @@ export default function StorefrontPage() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
+      {isDemoMode && (
+        <div className="bg-amber-500 text-slate-900 text-xs py-2 px-4 text-center font-bold flex items-center justify-center gap-2">
+          <span>⚠️ Running in Demo/MVP Mode (Backend offline. Using mock catalog data).</span>
+          <button 
+            onClick={() => {
+              setIsDemoMode(false);
+              loadData();
+            }} 
+            className="underline hover:text-black font-extrabold flex items-center gap-1"
+          >
+            <RefreshCw size={12} className="inline animate-spin" style={{ animationDuration: '3s' }} /> Retry Connecting
+          </button>
+        </div>
+      )}
       {/* Hero section */}
       <section className="bg-gradient-to-br from-brand-green-700 via-brand-green-800 to-emerald-950 text-white py-16 px-4 relative overflow-hidden shadow-md">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
